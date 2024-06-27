@@ -32,5 +32,14 @@ export class Game extends Scene {
         this.player.setBounce(0.1);
         // Collisions
         this.physics.add.collider(this.player, this.ground);
+        // animations
+        this.anims.create({
+            key: 'idle',
+            frames: this.anims.generateFrameNumbers('frog', { start: 0, end: 3 }),
+            frameRate: 10,
+            repeat: -1
+        })
+        // Play the animation
+        this.player.anims.play('idle');
     }
 }
