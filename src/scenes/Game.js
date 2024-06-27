@@ -1,30 +1,21 @@
 import { Scene } from 'phaser';
 
-export class Game extends Scene
-{
-    constructor ()
-    {
+export class Game extends Scene {
+    constructor() {
         super('Game');
     }
 
-    preload ()
-    {
+    preload() {
         this.load.setPath('assets');
-        
+
         this.load.image('background', 'bg.png');
-        this.load.image('logo', 'logo.png');
+        this.load.image('ground', 'ground.png');
+        this.load.image('platform', 'platform.png');
     }
 
-    create ()
-    {
-        
-        this.add.image(512, 384, 'background');
-        this.add.image(512, 350, 'logo').setDepth(100);
-        this.add.text(512, 490, 'Make something fun!\nand share it with us:\nsupport@phaser.io', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        }).setOrigin(0.5).setDepth(100);
-        
+    create() {
+        this.add.image(0, 0, 'background').setOrigin(0);
+        this.add.image(0, this.game.config.height, 'ground').setOrigin(0, 1)
+        this.add.image(0, 300, 'platform').setOrigin(0);
     }
 }
