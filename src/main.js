@@ -5,9 +5,10 @@ import { AUTO, Scale, Game } from 'phaser';
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config = {
     type: AUTO,
-    width: 1024,
-    height: 768,
+    width: 512,
+    height: 384,
     parent: 'game-container',
+    pixelArt: true,
     backgroundColor: '#028af8',
     physics: {
         default: 'arcade',

@@ -20,9 +20,9 @@ export class Game extends Scene {
         this.physics.add.staticImage(0, this.game.config.height, 'ground').setOrigin(0, 1)
         // platforms
         this.platforms = this.physics.add.staticGroup();
-        this.platforms.create(0, 300, 'platform');
-        this.platforms.create(600, 400, 'platform');
-        this.platforms.create(50, 250, 'platform');
-        this.platforms.create(750, 220, 'platform');
+        this.platforms.create(100, 300, 'platform').setOrigin(0, 0);
+        this.platforms.create(150, 250, 'platform').setOrigin(0, 0);
+        this.platforms.create(250, 250, 'platform').setOrigin(0, 0);
+        this.platforms.create(300, 300, 'platform').setOrigin(0, 0);
     }
 }
