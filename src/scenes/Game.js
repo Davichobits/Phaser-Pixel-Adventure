@@ -7,6 +7,7 @@ export class Game extends Scene {
 
     score = 0;
     scoreText;
+    isJumping = false;
 
     preload() {
         this.load.setPath('assets');
@@ -14,7 +15,7 @@ export class Game extends Scene {
         this.load.image('background', 'bg.png');
         this.load.image('ground', 'ground.png');
         this.load.image('platform', 'platform.png');
-        this.load.image('spike', 'spike.png');
+        this.load.image('bomb', 'spike.png');
         // SPRITES
         // frog
         this.load.spritesheet('frog', 'frog_idle.png', { frameWidth: 32, frameHeight: 32 });
@@ -25,6 +26,10 @@ export class Game extends Scene {
         this.load.spritesheet('apple', 'apple.png', { frameWidth: 32, frameHeight: 32 });
         // Fonts
         this.load.bitmapFont("pixelfont", "fonts/pixelfont.png", "fonts/pixelfont.xml");
+        // audios
+        this.load.audio('lose', '/sounds/lose.wav');
+        this.load.audio('coin', '/sounds/coin.wav');
+        this.load.audio('jump', '/sounds/jump.wav');
     }
     create() {
         // Background
@@ -46,6 +51,8 @@ export class Game extends Scene {
         // Collisions
         this.physics.add.collider(this.player, this.ground);
         this.physics.add.collider(this.player, this.platforms);
+        // bombs
+        this.bombs = this.physics.add.group();
         // animations
         this.anims.create({
             key: 'idle',
@@ -80,22 +87,26 @@ export class Game extends Scene {
         // Input
         this.cursors = this.input.keyboard.createCursorKeys();
         // apples
-        this.apple = this.physics.add.group({
+        this.apples = this.physics.add.group({
             key: 'apple',
             repeat: 11,
             setXY: { x: 110, y: 0, stepX: 20 }
         });
-        this.apple.children.iterate((child) => {
+        this.apples.children.iterate((child) => {
             child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
             child.body.setSize(13, 13);
             child.anims.play('apple', true);
         });
-        this.physics.add.collider(this.apple, this.platforms);
-        this.physics.add.collider(this.apple, this.ground);
+        this.physics.add.collider(this.apples, this.platforms);
+        this.physics.add.collider(this.apples, this.ground);
+        this.physics.add.collider(this.bombs, this.platforms);
+        this.physics.add.collider(this.bombs, this.ground);
+        this.physics.add.collider(this.bombs, this.player, this.hitbomb, null, this);
         // collect
-        this.physics.add.overlap(this.player, this.apple, this.collectApple, undefined, this);
+        this.physics.add.overlap(this.player, this.apples, this.collectApple, undefined, this);
         // score
         this.points_text = this.add.bitmapText(20, 20, "pixelfont", "Score: 0", 24);
+
     }
     update() {
         if (this.cursors.left.isDown) {
@@ -114,16 +125,49 @@ export class Game extends Scene {
         if (this.cursors.space.isDown && this.player.body.touching.down) {
             this.player.setVelocityY(-330);
             this.player.anims.play('jump', true);
+            if (!this.isJumping) {
+                this.sound.play('jump');
+                this.isJumping = true;
+            }
         }
 
         // Play jump animation while in the air
         if (!this.player.body.touching.down && this.player.anims.currentAnim.key !== 'jump') {
             this.player.anims.play('jump', true);
         }
+        // Reset isJumping when player lands
+        if (this.player.body.touching.down) {
+            this.isJumping = false;
+        }
     }
+    // functions
     collectApple(player, apple) {
         apple.disableBody(true, true);
         this.score += 10;
+        this.sound.play('coin');
         this.points_text.setText('Score: ' + this.score);
+
+        if (this.apples.countActive(true) === 0) {
+            this.apples.children.iterate(function (child) {
+
+                child.enableBody(true, child.x, 0, true, true);
+
+            });
+
+            var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
+
+            var bomb = this.bombs.create(x, 16, 'bomb');
+            bomb.setBounce(1);
+            bomb.setCollideWorldBounds(true);
+            bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+
+        }
+    }
+    hitbomb(player, bomb) {
+        this.physics.pause();
+        player.setTint(0xff0000);
+        this.sound.play('lose');
+        player.anims.play('idle');
+        this.game_over = true;
     }
 }
