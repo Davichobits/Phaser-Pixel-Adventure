@@ -10,17 +10,21 @@ export class Game extends Scene {
 
     preload() {
         this.load.setPath('assets');
-
+        // IMAGES
         this.load.image('background', 'bg.png');
         this.load.image('ground', 'ground.png');
         this.load.image('platform', 'platform.png');
-
-        // Frog
+        this.load.image('spike', 'spike.png');
+        // SPRITES
+        // frog
         this.load.spritesheet('frog', 'frog_idle.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('frog_jump', 'frog_jump.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('frog_run', 'frog_run.png', { frameWidth: 32, frameHeight: 32 });
-        // star
+        // this.load.spritesheet('collected', 'collected.png', { frameWidth: 32, frameHeight: 32 });
+        // apple
         this.load.spritesheet('apple', 'apple.png', { frameWidth: 32, frameHeight: 32 });
+        // Fonts
+        this.load.bitmapFont("pixelfont", "fonts/pixelfont.png", "fonts/pixelfont.xml");
     }
     create() {
         // Background
@@ -67,6 +71,12 @@ export class Game extends Scene {
             frameRate: 20,
             repeat: -1
         })
+        // this.anims.create({
+        //     key: 'collected',
+        //     frames: this.anims.generateFrameNumbers('collected', { start: 0, end: 5 }),
+        //     frameRate: 20,
+        //     repeat: 1
+        // })
         // Input
         this.cursors = this.input.keyboard.createCursorKeys();
         // apples
@@ -82,9 +92,10 @@ export class Game extends Scene {
         });
         this.physics.add.collider(this.apple, this.platforms);
         this.physics.add.collider(this.apple, this.ground);
-        this.physics.add.overlap(this.player, this.apple, this.collectStar, undefined, this);
+        // collect
+        this.physics.add.overlap(this.player, this.apple, this.collectApple, undefined, this);
         // score
-        this.scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        this.points_text = this.add.bitmapText(20, 20, "pixelfont", "Score: 0", 24);
     }
     update() {
         if (this.cursors.left.isDown) {
@@ -110,9 +121,9 @@ export class Game extends Scene {
             this.player.anims.play('jump', true);
         }
     }
-    collectStar(player, apple) {
+    collectApple(player, apple) {
         apple.disableBody(true, true);
         this.score += 10;
-        this.scoreText.setText('Score: ' + this.score);
+        this.points_text.setText('Score: ' + this.score);
     }
 }
