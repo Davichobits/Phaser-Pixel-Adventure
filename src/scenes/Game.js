@@ -5,6 +5,9 @@ export class Game extends Scene {
         super('Game');
     }
 
+    score = 0;
+    scoreText;
+
     preload() {
         this.load.setPath('assets');
 
@@ -12,12 +15,13 @@ export class Game extends Scene {
         this.load.image('ground', 'ground.png');
         this.load.image('platform', 'platform.png');
 
-        // spritesheets
+        // Frog
         this.load.spritesheet('frog', 'frog_idle.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('frog_jump', 'frog_jump.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('frog_run', 'frog_run.png', { frameWidth: 32, frameHeight: 32 });
+        // star
+        this.load.spritesheet('apple', 'apple.png', { frameWidth: 32, frameHeight: 32 });
     }
-
     create() {
         // Background
         this.add.image(0, 0, 'background').setOrigin(0);
@@ -30,7 +34,7 @@ export class Game extends Scene {
         this.platforms.create(250, 250, 'platform').setOrigin(0, 0).refreshBody();
         this.platforms.create(300, 300, 'platform').setOrigin(0, 0).refreshBody();
         // player
-        this.player = this.physics.add.sprite(0, 0, 'frog');
+        this.player = this.physics.add.sprite(0, 300, 'frog');
         this.player.body.setSize(20, 25);
         this.player.body.setOffset(6, 6);
         this.player.setCollideWorldBounds(true);
@@ -57,11 +61,30 @@ export class Game extends Scene {
             frameRate: 20,
             repeat: -1
         })
-        // Play the animation
-        this.player.anims.play('idle');
+        this.anims.create({
+            key: 'apple',
+            frames: this.anims.generateFrameNumbers('apple', { start: 0, end: 16 }),
+            frameRate: 20,
+            repeat: -1
+        })
         // Input
         this.cursors = this.input.keyboard.createCursorKeys();
-
+        // apples
+        this.apple = this.physics.add.group({
+            key: 'apple',
+            repeat: 11,
+            setXY: { x: 110, y: 0, stepX: 20 }
+        });
+        this.apple.children.iterate((child) => {
+            child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+            child.body.setSize(13, 13);
+            child.anims.play('apple', true);
+        });
+        this.physics.add.collider(this.apple, this.platforms);
+        this.physics.add.collider(this.apple, this.ground);
+        this.physics.add.overlap(this.player, this.apple, this.collectStar, undefined, this);
+        // score
+        this.scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
     }
     update() {
         if (this.cursors.left.isDown) {
@@ -86,5 +109,10 @@ export class Game extends Scene {
         if (!this.player.body.touching.down && this.player.anims.currentAnim.key !== 'jump') {
             this.player.anims.play('jump', true);
         }
+    }
+    collectStar(player, apple) {
+        apple.disableBody(true, true);
+        this.score += 10;
+        this.scoreText.setText('Score: ' + this.score);
     }
 }
